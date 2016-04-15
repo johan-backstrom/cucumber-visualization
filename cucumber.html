@@ -1,0 +1,112 @@
+<html>
+  <head>
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+	<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.js"></script>
+    <script type="text/javascript">
+      
+	  google.load("visualization", "1", {packages:["corechart"]});
+            
+	  $( document ).ready(function() {
+        google.setOnLoadCallback(doStuff);
+	  });
+	  
+	  function doStuff(){
+	    $.ajax({
+          url: "result.json",
+          success: function( data ) {
+            console.log("read data: " + data)
+			drawChart(data)
+          }
+        });
+	  }
+	  
+	  function drawChart(data) {
+		var success = 0;
+		var ignored = 0;
+		var failed = 0;
+		var unknown = 0;
+		var messageRows = ''
+
+		for ( i = 0; i < data.length; i++ ){
+		  if ("elements" in data[i]){
+		    for ( j = 0; j<data[i].elements.length; j++ ){
+		      if ("steps" in data[i].elements[j]){
+		        for ( k=0; k < data[i].elements[j].steps.length; k++ ){
+			      switch (data[i].elements[j].steps[k].result.status){
+				    case "passed":
+				      success++;
+				      break;
+				    case "failed":
+				      failed++;
+					  messageRows += "<tr><td>" + data[i].elements[j].name + "</td><td>" + data[i].elements[j].steps[k].name + "</td></tr>";
+					  break;
+				    case "skipped":
+				      ignored++;
+					  break;
+				    default:
+				      unknown++;
+				  }
+				}
+              }
+			}
+		  }
+		}
+
+        var data = google.visualization.arrayToDataTable([
+          ['Status', 'Number'],
+          ['Failed: ' + failed, failed],
+          ['Ignored: ' + ignored, ignored],
+		  ['Success: ' + success, success],
+        ]);
+
+        var options = {
+          title: 'Test results',
+		  pieSliceTextStyle: {
+            color: 'black',
+          },
+		  colors: ['#ff8080', '#ffff80', '#b3ff66'],
+		  slices: { 0: {offset: 0.2} },
+		  backgroundColor: '#eaeaea',
+        };
+
+		var message = '<h3>Failed tests</h3><table id="failed"><tr><th>Scenario</th><th>Step</th></tr>' + messageRows + '</table>';
+		if ( failed > 0 ){
+          $("#failed").append(message)
+		}
+        var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+        chart.draw(data, options);
+      }
+    </script>
+	<style>
+		body {
+			background: #eaeaea;
+		}
+		
+		table {
+			border-collapse: collapse;
+			width: 100%;
+		}
+
+		table td, table th {
+			border: 1px solid #ddd;
+			text-align: left;
+			padding: 8px;
+		}
+
+		table tr:nth-child(even){background-color: #ffffff}
+
+		table tr:hover {background-color: #ddd;}
+
+		table th {
+			padding-top: 12px;
+			padding-bottom: 12px;
+			background-color: #ff8080;
+			color: white;
+		}
+	</style>
+  </head>
+  <body>
+    <div id="piechart" style="width: 900px; height: 450px;"></div>
+	<div id="failed"></div>
+  </body>
+</html>
