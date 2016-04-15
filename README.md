@@ -10,4 +10,4 @@ Include the html-file in your project, then publish the file to a web server in 
 
 THe look and feel is altered by modifying the html file.
 
-![alt text](https://github.com/johan-backstrom/cucumber-visualization/screenshot.png "Screenshot")
+![Screenshot](https://github.com/johan-backstrom/cucumber-visualization/blob/master/screenshot.png "Screenshot")
